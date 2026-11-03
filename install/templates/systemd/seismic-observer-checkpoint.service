@@ -38,6 +38,7 @@ ExecStart=/usr/local/libexec/seismic/summit-checkpoint-runner \
     --rpc-ip 127.0.0.1 --rpc-port 3030 --admin-rpc-port 3031 \
     --prom-ip 127.0.0.1 --prom-port 9090 \
     --critical-log-dir ${SUMMIT_CRITICAL_LOG_DIR} \
+    --log-level ${SUMMIT_LOG_LEVEL} \
     $SUMMIT_BOOTSTRAPPERS_ARG
 Restart=on-failure
 RestartSec=5s

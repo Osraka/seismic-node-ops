@@ -190,6 +190,14 @@ step installs from `install/templates/openresty/logrotate-openresty`.) The
 checkpointer's Reth subprocess can also write rotating files under
 `/var/cache/seismic-checkpointer/reth/`, via its unit's `XDG_CACHE_HOME`.
 
+Summit's volume is set by `SUMMIT_LOG_LEVEL` in `node.env` (`info` in the
+example). Summit's own default, `debug`, writes several hundred lines per second
+on a validator, more than journald's per-service rate limit admits; journald
+then drops lines silently apart from a periodic
+`Suppressed N messages from seismic-summit.service` entry, and the lines lost
+include the ones an incident needs. Raise the level only while troubleshooting
+and restart Summit afterwards.
+
 ```bash
 journalctl -u seismic-reth -f
 journalctl -u seismic-summit -p err
@@ -422,6 +430,7 @@ every key; the ones you must decide are:
 | Key                                                                                                                                      | Set to                                                                                                                      |
 | ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `SEISMIC_ROLE`                                                                                                                           | `validator` or `observer`                                                                                                   |
+| `SUMMIT_LOG_LEVEL`                                                                                                                       | `info`; `debug` only while troubleshooting (see [2](#2-host-layout), logging)                                               |
 | `RETH_PEERING` and its inputs                                                                                                            | `trusted` with the repository's peers file for a validator; `discovery` with a bootnode for observers and RPC nodes (below) |
 | `SUMMIT_BOOTSTRAPPERS_FILE` / `SUMMIT_BOOTSTRAPPERS_ARG`                                                                                 | `/persistence/keys/summit/bootstrappers.toml` and `--bootstrappers <that path>`, or both empty                              |
 | `CUSTODIAN_COUNCIL_ADDRESS`, `CUSTODIAN_CHAIN_ID`                                                                                        | Address has a testnet default; chain ID from Seismic operations                                                             |

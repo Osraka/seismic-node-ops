@@ -447,6 +447,7 @@ class SchemaTests(unittest.TestCase):
             set(closed),
             {
                 "SEISMIC_ROLE",
+                "SUMMIT_LOG_LEVEL",
                 "SUMMIT_INSTALL_METHOD",
                 "RETH_INSTALL_METHOD",
                 "CUSTODIAN_INSTALL_METHOD",
@@ -668,6 +669,28 @@ class SchemaTests(unittest.TestCase):
                 self.assertRaisesRegex(nodeenv.NodeEnvError, "SUMMIT_VERSION"),
             ):
                 nodeenv.validate(example_values(SUMMIT_VERSION=bad))
+
+    def test_summit_log_level_is_required_and_enumerated(self):
+        for good in nodeenv.SUMMIT_LOG_LEVELS:
+            with self.subTest(level=good):
+                nodeenv.validate(example_values(SUMMIT_LOG_LEVEL=good))
+        # Summit's own default is debug; the unit never relies on it, so the key
+        # cannot be empty: systemd expands an unset or empty ${SUMMIT_LOG_LEVEL}
+        # to one empty argument, and Summit panics on `--log-level ""`.
+        # Lower-case only, stricter than Summit's case-insensitive parser, like
+        # the other closed-choice keys; this is intentional.
+        for bad in ("", "INFO", "verbose", "info,debug"):
+            with (
+                self.subTest(level=bad),
+                self.assertRaisesRegex(nodeenv.NodeEnvError, "SUMMIT_LOG_LEVEL"),
+            ):
+                nodeenv.validate(example_values(SUMMIT_LOG_LEVEL=bad))
+        values = example_values()
+        del values["SUMMIT_LOG_LEVEL"]
+        with self.assertRaisesRegex(
+            nodeenv.NodeEnvError, "missing required keys?: SUMMIT_LOG_LEVEL"
+        ):
+            nodeenv.validate(values)
 
     def test_branch_refs_only_for_source_builds(self):
         env = nodeenv.validate(

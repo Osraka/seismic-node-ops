@@ -285,6 +285,28 @@ class ExecStartExpansionTests(unittest.TestCase):
             "/persistence/keys/summit/bootstrappers.toml",
         )
 
+    def test_every_summit_variant_passes_the_configured_log_level(self):
+        # Summit defaults to debug, which on a validator exceeds journald's rate
+        # limit; every variant must pass node.env's level explicitly.
+        observer = {
+            **OBSERVER,
+            "CUSTODIAN_PARENT_URL": EVERYTHING["CUSTODIAN_PARENT_URL"],
+        }
+        for name, overrides in (
+            ("seismic-summit", {}),
+            ("seismic-summit-checkpoint", {}),
+            ("seismic-observer", observer),
+            ("seismic-observer-checkpoint", observer),
+        ):
+            with self.subTest(unit=name):
+                env = full_env(**overrides)
+                nodeenv.validate(env)
+                argv = expand(exec_start(name), env)
+                self.assertEqual(argv[argv.index("--log-level") + 1], "info")
+                env = full_env(SUMMIT_LOG_LEVEL="debug", **overrides)
+                argv = expand(exec_start(name), env)
+                self.assertEqual(argv[argv.index("--log-level") + 1], "debug")
+
     def test_reth_disables_file_logging_but_keeps_stdout_for_journald(self):
         # Reth v0.1.0 enables rotating file logs by default. Under the service
         # sandbox an inaccessible default log path can panic before the Engine
