@@ -88,6 +88,10 @@ CHECKPOINTER_PORT = 42069
 KEY_PATTERN = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 ROLES = ("validator", "observer")
 INSTALL_METHODS = ("download", "prebuilt", "source")
+# Summit's `--log-level`. Its built-in default is `debug`, which on a validator
+# exceeds journald's rate limit and silently drops lines, so the unit always
+# passes this key explicitly.
+SUMMIT_LOG_LEVELS = ("error", "warn", "info", "debug", "trace")
 TLS_MODES = ("disabled", "custodian-only", "full", "external")
 MANAGED_TLS_MODES = ("custodian-only", "full")
 # How metrics leave the node: not at all, pushed by the Prometheus Agent, or
@@ -549,6 +553,7 @@ SCHEMA: dict[str, Field] = {
     "RETH_P2P_KEY_PATH": Field(_path),
     "SUMMIT_KEYS_DIR": Field(_path),
     "SUMMIT_CRITICAL_LOG_DIR": Field(_path),
+    "SUMMIT_LOG_LEVEL": Field(_enum(SUMMIT_LOG_LEVELS)),
     "SUMMIT_BOOTSTRAPPERS_FILE": Field(_optional_path),
     "SUMMIT_BOOTSTRAPPERS_ARG": Field(_optional_string),
     # Binaries
