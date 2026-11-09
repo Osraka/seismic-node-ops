@@ -1274,6 +1274,21 @@ is back. For a controlled restart prefer `validator stop` followed by
 
 ### Upgrading a binary
 
+If the upgrade also brings in newer unit templates or tooling from this
+repository, validate the existing `node.env` with the **new checkout before
+stopping the node**. For configurations created before
+[#35](https://github.com/SeismicSystems/seismic-node-ops/pull/35), add
+`SUMMIT_LOG_LEVEL=info` if the key is missing; keep any valid level already
+configured. The updated Summit units require it.
+
+```bash
+(cd "$REPO/tools" && sudo python3 -m seismic_node.nodeenv --check)
+```
+
+Resolve any validation errors before proceeding. Do not replace the whole
+configuration with the example file; it contains installation defaults, not the
+values for this node.
+
 1. `seismic-node validator stop` (or `observer stop`).
 2. Install the new binary at its fixed path (step 3.4). Update `*_VERSION` in
    `node.env` so the file records what is deployed.
